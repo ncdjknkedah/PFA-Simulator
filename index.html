@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Krisis PFA - Multiplayer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #4338ca; 
+            --card-bg: #ffffff;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --text-dark: #1e293b;
+            --tab-inactive: #e2e8f0;
+            --tab-inactive-text: #64748b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none; 
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: popIn 0.4s ease;
+        }
+
+        .active-screen { display: block; }
+
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; margin-top: 0; color: #0f172a; }
+        
+        .pin-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: #4338ca;
+            background: #e0e7ff;
+            padding: 10px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: var(--primary); color: white; }
+        .btn-success:hover { background: var(--primary-hover); }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; margin-top: 20px;}
+
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .player-badge {
+            background: #f1f5f9;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #3b82f6;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Sistem Tab Navigasi */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 10px;
+            border-radius: 10px;
+            background-color: var(--tab-inactive);
+            color: var(--tab-inactive-text);
+            font-size: 0.95rem;
+            margin-top: 0;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2);
+        }
+
+        .tab-btn-fasi.active {
+            background-color: #3b82f6;
+        }
+
+        .scenario-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-left: 5px solid #3b82f6;
+            text-align: justify;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        /* Kad Watak */
+        .role-box {
+            background: #fffbeb;
+            border-top: 8px solid #f59e0b;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+        
+        .role-box.pfa-style {
+            background: #ecfdf5;
+            border-top: 8px solid #10b981;
+        }
+
+        .role-tag {
+            display: inline-block;
+            background: #fde68a;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .pfa-style .role-tag { background: #a7f3d0; color: #065f46;}
+
+        .howto-box {
+            margin-top: 30px;
+            text-align: left;
+            background: #e0e7ff;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 5px solid #4338ca;
+        }
+        .howto-box h3 { color: #4338ca; margin-top: 0; font-size: 1rem; }
+        .howto-box ul { padding-left: 20px; font-size: 0.85rem; color: #334155; margin-bottom: 0; line-height: 1.5; }
+        .howto-box li { margin-bottom: 8px; }
+
+        .reminder-box {
+            background-color: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* Skrin Ringkasan Fasilitator */
+        .summary-list {
+            text-align: left;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 55vh;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+        }
+        .summary-item { padding: 15px 0; border-bottom: 1px solid #cbd5e1; }
+        .summary-item:last-child { border-bottom: none; }
+        .summary-name { font-weight: 800; color: #0f172a; font-size: 1.1rem; margin-bottom: 5px; }
+        .summary-role {
+            font-size: 0.75rem; font-weight: bold; display: inline-block;
+            background: #e2e8f0; padding: 3px 8px; border-radius: 12px; margin-left: 5px; vertical-align: middle;
+        }
+        .summary-role.pfa-text { background: #d1fae5; color: #059669; }
+        .summary-title { font-weight: 700; color: #b45309; font-size: 0.95rem; margin-bottom: 8px; }
+        .summary-details { font-size: 0.85rem; color: #475569; line-height: 1.5; }
+        .summary-details strong { color: #1e293b; }
+
+        .hidden { display: none !important; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SKRIN 1: MENU UTAMA -->
+    <div id="screen-home" class="screen active-screen">
+        <h1 style="color:var(--primary); font-size:2.2rem; margin-bottom:5px;">PFA Sim</h1>
+        <p style="color:#64748b; font-weight:600; margin-bottom:20px; font-size:0.9rem;">Latihan Pengurusan Krisis (Versi Penuh)</p>
+        <button class="btn-primary" onclick="showScreen('screen-fasi-create')">👨‍🏫 Fasilitator (Bina Bilik)</button>
+        <button class="btn-success" onclick="showScreen('screen-player-join')">📱 Ahli Kumpulan (Sertai)</button>
+        
+        <div class="howto-box">
+            <h3>📌 Cara Penggunaan:</h3>
+            <ul>
+                <li><strong>Fasilitator:</strong> Klik "Bina Bilik", pilih senario krisis, dan kongsikan <strong>Nombor PIN</strong> kepada ahli.</li>
+                <li><strong>Peserta:</strong> Klik "Sertai", kemudian masukkan PIN dan Nama anda.</li>
+                <li>Tunggu sehingga fasilitator mengagihkan watak secara rawak ke telefon anda.</li>
+                <li><strong>PERINGATAN:</strong> Rahsiakan identiti watak anda daripada rakan di sebelah dan hayati peranan tersebut!</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- BAHAGIAN FASILITATOR                       -->
+    <!-- ========================================== -->
+
+    <!-- Fasi: Pilih Senario -->
+    <div id="screen-fasi-create" class="screen">
+        <h2>Tetapan Simulasi</h2>
+        
+        <div style="text-align:left; margin-bottom:20px;">
+            <label style="font-weight:bold; color:#334155; font-size:0.9rem;">Sila Pilih Mod Senario Anda:</label>
+            <select id="scenario-select" style="background:#f8fafc; font-size: 0.95rem;">
+                <option value="jatuh_murid">Senario 1A: Pelajar Jatuh Bangunan (Kumpulan Murid)</option>
+                <option value="jatuh_guru">Senario 1B: Pelajar Jatuh Bangunan (Kumpulan Guru/Pentadbir)</option>
+                <option value="histeria_murid">Senario 2A: Histeria Asrama (Kumpulan Murid)</option>
+                <option value="histeria_guru">Senario 2B: Histeria Asrama (Kumpulan Warden/Guru)</option>
+                <option value="kebakaran_makmal_murid">Senario 3A: Letupan Makmal (Kumpulan Murid)</option>
+                <option value="kebakaran_makmal_guru">Senario 3B: Letupan Makmal (Kumpulan Guru/Staf)</option>
+                <option value="banjir_kampung">Senario 4: Bencana Banjir Kampung (Kumpulan Penduduk)</option>
+                <option value="kebakaran_rumah">Senario 5: Kebakaran Perumahan (Kumpulan Penduduk)</option>
+                <option value="udara_lima">Senario 6: Kemalangan Udara LIMA (Kumpulan Penduduk)</option>
+                <option value="petugas_banjir">Senario 7: Petugas Pasca Banjir (Multi-Agensi)</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="createRoom()" style="background:#f59e0b;">Bina Bilik Sekarang ➡️</button>
+        <button class="btn-primary" onclick="showScreen('screen-home')" style="background:#94a3b8; margin-top:15px;">Kembali</button>
+    </div>
+
+    <!-- Fasi: Lobi -->
+    <div id="screen-fasi-lobby" class="screen">
+        <h2>Bilik Menunggu</h2>
+        <p style="font-size:0.9rem;">Arahkan peserta masuk menggunakan PIN:</p>
+        <div class="pin-display" id="fasi-pin-display">----</div>
+        
+        <h3 id="player-count">Peserta (0):</h3>
+        <div class="player-list" id="fasi-player-list"></div>
+
+        <button class="btn-success" onclick="startScenario()">Mula & Papar Senario ➡️</button>
+    </div>
+
+    <!-- Fasi: Agih Watak -->
+    <div id="screen-fasi-assign" class="screen">
+        <h2>Agihan Watak</h2>
+        <p style="font-size:0.85rem;">Pilih 2 peserta sebagai Petugas PFA. Baki akan diagihkan watak rawak mengikut senario yang dipilih.</p>
+        
+        <div style="text-align:left; margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:8px;">
+            <label style="font-weight:bold; font-size:0.9rem;">Petugas PFA 1 (Leader):</label>
+            <select id="pfa-select-1"><option value="">-- Rawak / Random --</option></select>
+            <br><br>
+            <label style="font-weight:bold; font-size:0.9rem;">Petugas PFA 2 (Observer):</label>
+            <select id="pfa-select-2"><option value="">-- Rawak / Random --</option></select>
+        </div>
+
+        <button class="btn-warning" onclick="assignRoles()">🎲 Agih Semua Watak</button>
+        <button class="btn-danger" onclick="endSimulation()">🛑 Batal & Kembali</button>
+    </div>
+
+    <!-- Fasi: Ringkasan Agihan Penuh dengan Sistem Tab -->
+    <div id="screen-fasi-summary" class="screen">
+        <h2 style="margin-bottom: 5px;">Papan Pemuka</h2>
+        <p style="font-size:0.75rem; color:#ef4444; font-weight:bold; margin-bottom: 10px;">Hanya anda yang dapat melihat senarai ini.</p>
+        
+        <div class="tab-nav">
+            <button id="tab-fasi-watak" class="tab-btn tab-btn-fasi active" onclick="switchFasiTab('watak')">👥 Senarai Watak</button>
+            <button id="tab-fasi-senario" class="tab-btn tab-btn-fasi" onclick="switchFasiTab('senario')">📖 Rujuk Senario</button>
+        </div>
+
+        <div id="fasi-content-watak">
+            <div class="summary-list" id="fasi-summary-list"></div>
+        </div>
+
+        <div id="fasi-content-senario" class="hidden">
+            <div class="scenario-box" id="fasi-scenario-text-view"></div>
+        </div>
+
+        <button class="btn-danger" onclick="endSimulation()">🛑 Tamatkan Simulasi</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- BAHAGIAN PESERTA                           -->
+    <!-- ========================================== -->
+
+    <!-- Player: Join -->
+    <div id="screen-player-join" class="screen">
+        <h2>Sertai Simulasi</h2>
+        <input type="number" id="input-pin" placeholder="PIN Bilik (Contoh: 1234)">
+        <input type="text" id="input-name" placeholder="Nama Anda (Contoh: Aiman)">
+        <button class="btn-success" onclick="joinRoom()">Masuk Bilik</button>
+        <button class="btn-primary" onclick="showScreen('screen-home')" style="background:#94a3b8;">Kembali</button>
+    </div>
+
+    <!-- Player: Waiting -->
+    <div id="screen-player-waiting" class="screen">
+        <h2>Senario Krisis</h2>
+        <div class="scenario-box" id="player-waiting-scenario-text">
+            <em>Menunggu fasilitator memulakan sesi...</em>
+        </div>
+        <p style="font-size:0.85rem; color:#f59e0b; font-weight:bold;" id="waiting-text">
+            ⏳ Baca senario dan tunggu fasilitator menetapkan watak...
+        </p>
+    </div>
+
+    <!-- Player: Role Card dengan Sistem Tab -->
+    <div id="screen-player-role" class="screen">
+        <div class="tab-nav">
+            <button id="tab-player-watak" class="tab-btn active" onclick="switchPlayerTab('watak')">🎭 Watak Anda</button>
+            <button id="tab-player-senario" class="tab-btn" onclick="switchPlayerTab('senario')">📖 Senario</button>
+        </div>
+
+        <div id="player-content-watak">
+            <p style="font-size:0.8rem; color:#ef4444; font-weight:bold; margin-bottom:5px; margin-top:5px;">Sila rahsiakan watak ini daripada rakan anda.</p>
+            <div class="role-box" id="player-role-card"></div>
+        </div>
+
+        <div id="player-content-senario" class="hidden">
+            <p style="font-size:0.8rem; color:#3b82f6; font-weight:bold; margin-bottom:5px; margin-top:5px;">Rujukan Senario Semasa</p>
+            <div class="scenario-box" id="player-role-scenario-text"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // ==========================================
+        // 1. KONFIGURASI FIREBASE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1rjfGSOJfv0L1FwNH-ng3OAGPwLS5tYs",
+            authDomain: "simulasi-pfa.firebaseapp.com",
+            databaseURL: "https://simulasi-pfa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "simulasi-pfa",
+            storageBucket: "simulasi-pfa.firebasestorage.app",
+            messagingSenderId: "218238516112",
+            appId: "1:218238516112:web:9fd173ff117d4e5fc85115",
+            measurementId: "G-0X6CLZWSQ4"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // ==========================================
+        // 2. DATA PANGKALAN WATAK & SENARIO VERBATIM PENUH
+        // ==========================================
+        
+        const dbPFA = [
+            { role: "PETUGAS PFA (LEADER)", title: "PFA Provider (Leader)", emotion: "Tenang, Empati, Rasional & Terkawal", desc: "Mengetuai perjalanan sesi PFA - (Pengenalan, Tujuan, Tetapkan Syarat, Sesi berkenalan, Look, Listen, Link, Psikopendidikan, Penutup).", action: "Tindakan: Look, Listen, Link", reminder: "<strong>✅ The DOs:</strong> Dengar secara aktif tanpa mencelah, tunjukkan empati melalui bahasa badan, dan penuhi keperluan asas/keselamatan mangsa terlebih dahulu.<br><br><strong>❌ The DON'Ts:</strong> Jangan paksa mangsa bercakap jika mereka belum bersedia, jangan beri jaminan palsu ('semua akan okey'), dan jangan melabel mangsa dengan istilah penyakit mental (seperti anxiety/depression)." },
+            { role: "PETUGAS PFA (OBSERVER)", title: "PFA Provider (Observer)", emotion: "Fokus, Peka, Siap Sedia", desc: "Membantu PFA Provider (Leader) menjalankan sesi PFA. Memerhatikan setiap ahli kumpulan sekiranya ada yang menunjukkan tanda-tanda amaran dan perlukan intervensi berasingan.", action: "Tindakan: Look, Listen, Link", reminder: "<strong>✅ The DOs:</strong> Peka dengan pergerakan dan bahasa badan mangsa, bantu wujudkan persekitaran yang selamat (privacy), dan bersedia menyokong leader jika keadaan di luar kawalan.<br><br><strong>❌ The DON'Ts:</strong> Jangan menyampuk atau memotong percakapan leader, jangan panik jika keadaan tiba-tiba menjadi tegang, dan jangan abaikan mangsa yang duduk memencilkan diri di penjuru." }
+        ];
+
+        const dbScenarios = {
+            "jatuh_murid": {
+                teks: "Semalam... hari Isnin yang sepatutnya biasa bertukar menjadi detik paling hitam dalam sejarah sekolah kita. Sekitar jam 10.00 pagi, ketika sesi rehat hampir ke penamat, satu dentuman kuat menggegarkan kawasan blok akademik bangunan empat tingkat. Suasana sekolah yang tadinya riuh tiba-tiba berubah menjadi sunyi sepi, sebelum dipecahkan dengan jeritan histeria. Seorang pelajar Tingkatan 4—rakan sekelas anda sendiri—telah terjatuh dari tingkat tiga bangunan sekolah. Kejadian itu berlaku di depan mata sebahagian daripada anda. Ada yang mendengar jeritannya, ada yang melihat bayang tubuhnya melayang, dan ada yang berlari merempuh koridor untuk melihat pemandangan ngeri di bawah. Ambulans datang, polis menyelongkar kawasan kejadian, pita kuning garisan keselamatan melingkari tapak bangunan, dan guru-guru terkejut besar. Hari semalam berakhir dengan air mata, persoalan tanpa jawapan, dan rasa terkejut yang mencengkam dada. Sekarang... buka mata anda. Hari ini adalah keesokan harinya. Suasana sekolah masih dalam keadaan kelam-kabut dan diselubungi ketakutan. Bilik darjah kelas anda terlalu sunyi; sebuah kerusi di sebelah meja Fikri kosong, dipenuhi kesan beg sekolah yang tidak sempat dikemas. Pihak pentadbiran sekolah mengarahkan Guru Bimbingan dan Kaunseling (GBK) bersama seorang guru kelas untuk mengendalikan sebuah sesi intervensi krisis awal di bilik kaunseling.",
+                pool: [
+                    { role: "MURID", title: "Si Pendiam yang Berkabung (Fikri / Fikrah)", emotion: "Sedih mendalam, menarik diri (withdrawal), dan membisu.", desc: "Rakan baik mangsa yang duduk sebelah meja. Dia tidak menangis di luar, tetapi merenung kosong, menolak sebarang makanan, dan langsung tidak mahu bercakap sejak semalam.", action: "Tunjukkan bahasa badan yang kaku, pandangan kosong, dan hanya menjawab soalan dengan gelengan atau kata-kata sepatah apabila didesak." },
+                    { role: "MURID", title: "Si Saksi Mata Utama (Aiman / Aina)", emotion: "Trauma akut, rasa bersalah yang kuat (survivor’s guilt), dan imbas kembali (flashbacks).", desc: "Murid yang berada paling dekat ketika kejadian berlaku dan sempat melihat saat-saat akhir mangsa. Dia dihantui bayangan itu dan berulang kali merungut, 'Kalaulah saya tarik beg dia tadi...'", action: "Berkeadaan cemas, kerap memegang kepala, menggigil, dan menceritakan semula cebisan memori ngeri itu secara terputus-putus." },
+                    { role: "MURID", title: "Si Penafian (Daniel / Dania)", emotion: "Denial (tidak percaya), menolak kenyataan, dan bersikap sinis.", desc: "Murid yang menganggap semua ini adalah gurauan kasar atau mimpi ngeri. Dia menegaskan, 'Dia baru je gelak dengan saya semalam, tak mungkin dia bunuh diri/terjatuh. Korang semua ni tipu!'", action: "Ketawa dalam kegelisahan, menolak uluran tangan kaunselor, dan marah apabila orang lain mula mengalirkan air mata." },
+                    { role: "MURID", title: "Si Pencetus Panik / Histeria (Haziq / Haziqah)", emotion: "Panik melampau, ketakutan fizikal, dan histeria ringan.", desc: "Murid yang sangat takut untuk berada di dalam bilik darjah itu atau bangunan tingkat atas. Dia mendakwa mendengar bunyi bising yang sama dan takut bumbung atau lantai runtuh.", action: "Bernafas dengan laju (hyperventilation), meronta-ronta mahu keluar dari bilik kaunseling, dan takut melihat tingkap atau balkoni." },
+                    { role: "MURID", title: "Si Marah & Pendendam (Zack / Zara)", emotion: "Marah yang dialihkan (misplaced anger), menyalahkan pihak sekolah/sistem.", desc: "Murid yang berasa tidak puas hati dan mencari siapa yang boleh dipersalahkan. Dia menyalahkan pihak sekolah kerana ketat sangat disiplin, atau menyalahkan guru tertentu, atau menuduh rakan-rakan lain sebagai pembuli mangsa secara diam-diam.", action: "Berucap dengan nada tinggi, menuduh, bersilang tangan, dan mencabar kewibawaan GBK dan guru yang mengendalikan sesi." },
+                    { role: "MURID", title: "Si Pencari Perhatian / Drama (Mia / Mior)", emotion: "Sensasi keterlaluan, mengambil kesempatan di atas tragedi.", desc: "Murid yang cuba memonopoli perhatian kelompok dengan mendakwa kononnya dia tahu rahsia besar mangsa (padahal rekaan atau andaian sendiri) semata-mata mahu kelihatan penting.", action: "Terlalu berdrama, bercakap dengan nada berlebihan, menangis tetapi sesekali mencuri pandang untuk melihat reaksi orang lain." },
+                    { role: "MURID", title: "Si Rasional yang Menyembunyikan Takut (Amir / Amira)", emotion: "Menahan emosi, cuba menjadi kuat untuk orang lain, tetapi sebenarnya hampir 'tumpas'.", desc: "Ketua kelas atau pengawas yang memikul tanggungjawab mengawal kelas. Dia nampak tenang di luar dan berkata, 'Kita kena kuat, cikgu. Jangan menangis.' namun tangannya bergetar hebat.", action: "Cuba mengawal keadaan, nampak matang, tetapi jika didesak sedikit tentang perasaannya sendiri, dia akan pecah lobak (menangis teruk)." },
+                    { role: "MURID", title: "Si Penakut / Fobia Persekitaran (Imran / Inani)", emotion: "Fobia spesifik terhadap tempat tinggi atau sekolah.", desc: "Murid yang mula mengalami ketakutan melampau terhadap struktur fizikal sekolah. Dia enggan naik ke tingkat atas, takut melintas tempat kejadian, dan meminta izin untuk balik rumah serta-merta.", action: "Kerap mengadu sakit perut, pucat, dan merayu kepada guru supaya dibenarkan tidak hadir ke sekolah untuk hari-hari seterusnya." },
+                    { role: "MURID", title: "Si Mangsa Buli Senyap (Naufal / Nora)", emotion: "Rasa terasing, cemas, dan risau menjadi mangsa seterusnya atau disyaki.", desc: "Murid yang sebelum ini disisihkan oleh kumpulan mangsa. Apabila berlaku tragedi ini, dia merasa serba salah—antara simpati atau rasa bebas, tetapi dalam masa yang sama takut dituduh menjadi punca tekanan kepada mangsa.", action: "Duduk di penjuru, merendahkan diri, bercakap perlahan, dan kelihatan sangat terancam dengan kehadiran rakan-rakan lain." },
+                    { role: "MURID", title: "Si Murid Pasif / Pengikut (Adam / Adiba)", emotion: "Bingung, terikut-ikut emosi orang lain (ikut menangis bila orang menangis, ikut diam bila orang diam).", desc: "Murid biasa yang tidak rapat sangat dengan mangsa, tetapi terikut dengan suasana sedih dalam kelas. Dia tidak tahu bagaimana hendak reagsi dan hanya mengikut apa sahaja arahan GBK.", action: "Mengangguk sahaja apabila ditanya, keliru dengan situasi sekeliling, dan bergantung kepada rakan sebelah untuk membuat keputusan." }
+                ]
+            },
+            "jatuh_guru": {
+                teks: "Semalam... hari Isnin yang sepatutnya biasa bertukar menjadi detik paling hitam dalam sejarah sekolah kita. Sekitar jam 10.00 pagi, ketika sesi rehat hampir ke penamat, satu dentuman kuat menggegarkan kawasan blok akademik bangunan empat tingkat. Suasana sekolah yang tadinya riuh tiba-tiba berubah menjadi sunyi sepi, sebelum dipecahkan dengan jeritan histeria. Seorang pelajar Tingkatan 4—rakan sekelas anda sendiri—telah terjatuh dari tingkat tiga bangunan sekolah. Kejadian itu berlaku di depan mata sebahagian daripada anda. Ada yang mendengar jeritannya, ada yang melihat bayang tubuhnya melayang, dan ada yang berlari merempuh koridor untuk melihat pemandangan ngeri di bawah. Ambulans datang, polis menyelongkar kawasan kejadian, pita kuning garisan keselamatan melingkari tapak bangunan, dan guru-guru terkejut besar. Hari semalam berakhir dengan air mata, persoalan tanpa jawapan, dan rasa terkejut yang mencengkam dada. Sekarang... buka mata anda. Hari ini adalah keesokan harinya. Suasana sekolah masih dalam keadaan kelam-kabut dan diselubungi ketakutan. Bilik darjah kelas anda terlalu sunyi; sebuah kerusi di sebelah meja Fikri kosong, dipenuhi kesan beg sekolah yang tidak sempat dikemas. Pihak pentadbiran sekolah mengarahkan Guru Bimbingan dan Kaunseling (GBK) bersama seorang guru kelas untuk mengendalikan sebuah sesi intervensi krisis awal di bilik kaunseling.",
+                pool: [
+                    { role: "GURU / PENTADBIR", title: "Pengetua yang Ditekan Tekanan Luar & Dalam", emotion: "Terbeban dengan imej sekolah, risaukan tindakan PPD/JPN/KPM, dan tertekan dengan media/ibu bapa.", desc: "Pentadbir utama yang terpaksa menjawab pelbagai pihak (Kementerian, Polis, JPN, dan media sosial). Dia kelihatan tenang di luar tetapi sebenarnya hampir rebah kerana risau dirinya dipecat atau disaman.", action: "Berkeadaan terkejar-kejar, kerap memegang telefon bimbit, mengeluarkan arahan bercanggah kerana panik, dan mendesak GBK supaya 'selesaikan kes ini dengan cepat supaya sekolah boleh kembali pulih'." },
+                    { role: "GURU / PENTADBIR", title: "Guru Kelas yang Dibunuh Rasa Bersalah", emotion: "Survivor's guilt, menyalahkan diri sendiri, rasa gagal sebagai pendidik.", desc: "Guru yang menjaga kelas mangsa. Dia teringat pesanan terakhir mangsa pagi semalam tetapi tidak sempat melayannya kerana sibuk mengajar. Dia meroyan kecil dan menganggap dirinya gagal mengenali tanda-tanda tekanan pada muridnya.", action: "Asyik mengalirkan air mata, merenung buku rekod mengajar kosong, dan berulang kali berkata, 'Kalau saya ambil berat sikit masa subjek saya semalam, mesti dia tak buat macam ni...'" },
+                    { role: "GURU / PENTADBIR", title: "Guru Disiplin yang Tegas tapi Hancur Hati", emotion: "Rasa bersalah kerana imej 'pemberi hukuman', disyaki oleh murid, tertekan dengan dakwaan buli.", desc: "Guru yang sering dianggap garang di sekolah. Selepas kejadian, dia bimbang murid-murid menuduhnya sebagai punca tekanan mangsa (kerana mangsa mungkin pernah dipanggil atas isu disiplin). Dia cuba mengekalkan imej 'kerasan' tetapi suaranya bergetar.", action: "Bersikap defensive pada mulanya, mempertahankan prosedur sekolah, tetapi akhirnya patah semangat apabila diserang emosi oleh rakan guru atau murid." },
+                    { role: "GURU / PENTADBIR", title: "Guru Mata Pelajaran Waktu Kejadian", emotion: "Trauma visual, flashback, dan ketakutan mengajar di kelas tingkat atas.", desc: "Guru yang sedang mengajar di dalam kelas ketika mangsa meminta izin keluar ke tandas sebelum kejadian berlaku. Dia dihantui bayangan mangsa meminta izin dan bunyi dentuman kuat di luar tingkap.", action: "Kelihatan pucat lesi, merenung kosong ke arah dinding, tidak mampu memegang pen dengan stabil, dan fobia untuk melangkah masuk semula ke kelas bangunan tersebut." },
+                    { role: "GURU / PENTADBIR", title: "Guru Penolong Kanan HEM (Hal Ehwal Murid)", emotion: "Letih fizikal dan mental, terbeban dengan prosedur siasatan polis dan laporan rasmi.", desc: "Individu yang menguruskan logistik krisis—menjaga kawasan kejadian, memanggil waris, berurusan dengan polis forensik, dan memastikan tiada murid merakam gambar tempat kejadian. Dia sudah 24 jam tidak tidur.", action: "Kelihatan kusut-masai, mata lebam kekuningan, bercakap dengan nada suara yang serak, mudah geram jika ada guru lain yang menambah masalah." },
+                    { role: "GURU / PENTADBIR", title: "Guru Senior yang Sinis & Putus Asa", emotion: "Sinis, penat dengan sistem pendidikan moden, rasa hilang minat mengajar.", desc: "Guru senior yang telah lama berkhidmat dan menganggap kes ini sebagai kemuncak keruntuhan mental generasi muda serta kelemahan sistem sokongan sekolah. Dia menyalahkan ibu bapa zaman sekarang yang melepaskan tanggungjawab kepada sekolah.", action: "Berpeluk tubuh, bercakap dengan nada sinis, mengeluh panjang, dan berpendapat sesi kaunseling tidak akan membawa apa-apa perubahan kerana 'budak sekarang manja'." },
+                    { role: "GURU / PENTADBIR", title: "Guru Pengiring / Rakan Karib Mangsa di Bilik Guru", emotion: "Empati melampau, keletihan emosi (compassion fatigue), rasa tidak berdaya.", desc: "Guru muda yang sangat rapat dengan mangsa kerana mangsa selalu membantu menguruskan bilik guru atau kelab persatuan. Dia menangis teresak-esak di meja guru dan tidak mampu menyembunyikan kesedihannya di depan murid.", action: "Menangis tanpa henti, memeluk fail milik mangsa, dan memohon agar pentadbiran memberi cuti rehat khas kerana emosinya terlalu terganggu untuk bertugas." },
+                    { role: "GURU / PENTADBIR", title: "Guru Jaga / Pengawal Keselamatan (diwakili guru bertugas)", emotion: "Rasa tertekan kerana disoal siasat, cemas, dan takut dipersalahkan dari aspek keselamatan sekolah.", desc: "Guru yang bertugas pada minggu tersebut yang meronda kawasan blok. Dia dituduh gagal memantau keselamatan struktur bangunan sekolah atau laluan koridor yang mudah diakses murid.", action: "Kelihatan gelisah, asyik bersumpah bahawa dia sudah menjalankan tugas meronda, dan takut disaman atau diambil tindakan tatatertib oleh Jabatan." },
+                    { role: "GURU / PENTADBIR", title: "Guru PIBG / Wakil Ibubapa di Sekolah", emotion: "Terperangkap di tengah-tengah antara suara ibu bapa yang marah dan pihak pentadbiran sekolah.", desc: "Guru yang memegang peranan penghubung dengan komuniti. Telefon bimbitnya dihujani mesej WhatsApp daripada kumpulan ibu bapa yang menuntut penjelasan dan mengancam untuk memboikot sekolah.", action: "Kelihatan serba salah, membawa telefon yang bergetar tanpa henti dengan notifikasi, dan merayu kepada pihak pengetua supaya segera membuat kenyataan media bagi meredakan keadaan." },
+                    { role: "GURU / PENTADBIR", title: "GBK Khas / Guru Pembantu Krisis", emotion: "Terbeban untuk memikul beban psikologi semua orang (murid dan guru serentak).", desc: "Rakan sejawat kepada GBK utama yang dipanggil membantu mengawal keadaan. Dia bukan sahaja perlu menguruskan 10 murid yang trauma tadi, malah turut diuji kerana guru-guru di bilik guru turut datang mengadu masalah emosi kepadanya.", action: "Kelihatan overwhelmed (terlalu banyak kerja), cuba menenangkan orang lain tetapi hampir menangis sendiri kerana tekanan beban tugas krisis yang terlalu besar di bahunya." }
+                ]
+            },
+            "histeria_murid": {
+                teks: "Malam tadi, asrama sekolah digemparkan dengan kejadian histeria beramai-ramai. Bermula dengan jeritan seorang pelajar dari blok puteri pada jam 11 malam, ia merebak pantas 'menjangkiti' berpuluh-puluh pelajar lain. Keadaan menjadi huru-hara; ada yang meracau, menangis tanpa sebab, dan ada yang mendakwa ternampak 'kelibat'. Warden dan guru yang bergegas ke asrama terpaksa berhempas-pulas menenangkan keadaan sehingga awal pagi. Hari ini, asrama ditutup sementara dan pelajar dikumpulkan di dewan. Suasana masih tegang, keletihan, dan penuh ketakutan.",
+                pool: [
+                    { role: "MURID", title: "Mangsa Utama (Pesakit Pertama)", emotion: "Rasa bersalah, sangat letih fizikal, keliru.", desc: "Andalah yang mula-mula menjerit semalam. Anda tak tahu apa yang berlaku, sedar-sedar anda sudah berada di bilik rawatan.", action: "Nampak lesu, tidak bermaya, menunduk ke bawah, dan menangis perlahan sambil minta maaf." },
+                    { role: "MURID", title: "Si Saksi Terdekat (Katil Sebelah)", emotion: "Ketakutan melampau, fobia (takut ruang asrama).", desc: "Anda nampak rakan anda meracau dari jarak dekat. Anda tak boleh tidur langsung semalaman.", action: "Menggigil, asyik memeluk lutut, merayu nak balik rumah dan enggan kembali ke asrama." },
+                    { role: "MURID", title: "Penular Histeria (Secondary Victim)", emotion: "Emosi tidak stabil, mudah terkejut.", desc: "Anda 'terjangkit' histeria semalam selepas melihat kawan menjerit. Masih ada sisa-sisa trauma.", action: "Bernafas laju, asyik memandang ke kiri dan kanan, sesekali menutup telinga." },
+                    { role: "MURID", title: "Si Penyebar Khabar Angin (Sensasi)", emotion: "Drama, mencari perhatian.", desc: "Anda tidak histeria, tapi anda yang menokok-tambah cerita kononnya nampak 'benda hitam' terbang.", action: "Berbisik-bisik dengan kawan, buat cerita seram, cuba menakut-nakutkan pelajar lain." },
+                    { role: "MURID", title: "Si Keras Kepala (Denial)", emotion: "Marah, rasional yang salah tempat.", desc: "Anda tidak percaya benda mistik dan marah pada kawan-kawan yang histeria sebab menyusahkan orang tak dapat tidur.", action: "Berpeluk tubuh, bercakap sinis, marah-marah dan mendakwa kawan-kawan cuma 'buat-buat' (berlakon)." },
+                    { role: "MURID", title: "Pengawas Asrama (Burnout)", emotion: "Keletihan mental & fizikal, rasa gagal.", desc: "Anda tolong ustaz dan warden pegang pelajar yang meronta semalam sampai lebam tangan.", action: "Nampak sangat tertekan, urut kepala dan bahu, rasa nak lepaskan jawatan." },
+                    { role: "MURID", title: "Si Lemah Semangat (Tingkatan 1)", emotion: "Rindu rumah (homesick), ketakutan.", desc: "Baru masuk asrama. Kejadian semalam buat anda rasa asrama tempat yang sangat bahaya.", action: "Asyik pegang lengan baju warden/cikgu, menangis teresak-esak minta nak telefon mak ayah." },
+                    { role: "MURID", title: "Si Pembantu Berlagak Berani", emotion: "Menyembunyikan trauma, sok kuat.", desc: "Semalam acah-acah berani tolong baca ayat suci, tapi sebenarnya trauma dan takut sampai terkencing.", action: "Mulut kumat-kamit baca ayat, tangan nampak bergetar, cepat melenting kalau ada bunyi kuat." },
+                    { role: "MURID", title: "Si Fobia Gelap", emotion: "Panik akut bila lampu tertutup.", desc: "Kejadian berlaku masa lights off. Kini anda panik bila berada di tempat kurang cahaya.", action: "Mengelak tempat teduh, asyik dongak tengok lampu, tarik nafas pendek-pendek." },
+                    { role: "MURID", title: "Si Pasif (Pemerhati)", emotion: "Bingung, terikut-ikut suasana.", desc: "Tidur mati semalam, bangun-bangun semua dah riuh. Tak tahu cerita sebenar tapi ikut sedih/takut.", action: "Mengangguk saja, blur, dan asyik tanya soalan, 'Apa yang jadi sebenarnya?'" }
+                ]
+            },
+            "histeria_guru": {
+                teks: "Malam tadi, asrama sekolah digemparkan dengan kejadian histeria beramai-ramai. Bermula dengan jeritan seorang pelajar dari blok puteri pada jam 11 malam, ia merebak pantas 'menjangkiti' berpuluh-puluh pelajar lain. Keadaan menjadi huru-hara; ada yang meracau, menangis tanpa sebab, dan ada yang mendakwa ternampak 'kelibat'. Warden dan guru yang bergegas ke asrama terpaksa berhempas-pulas menenangkan keadaan sehingga awal pagi. Hari ini, asrama ditutup sementara dan pelajar dikumpulkan di dewan. Suasana masih tegang, keletihan, dan penuh ketakutan.",
+                pool: [
+                    { role: "GURU / WARDEN", title: "Ketua Warden Tertekan", emotion: "Terbeban, risaukan ancaman ibu bapa yang nak serang asrama, marah-marah pentadbir tak tolong awal.", desc: "Risau ancaman ibu bapa yang nak serang asrama, marah-marah pentadbir tak tolong awal.", action: "Sibuk telefon, bercekak pinggang, marah-marah keadaan tak terkawal." },
+                    { role: "GURU / WARDEN", title: "Warden Baru (Trauma)", emotion: "Menggeletar, tak pernah urus histeria, rasa nak letak jawatan terus hari ini juga.", desc: "Tak pernah urus histeria, rasa nak letak jawatan terus hari ini juga.", action: "Menggigil, asyik cakap nak resign, tak berani dekat dengan pelajar." },
+                    { role: "GURU / WARDEN", title: "Guru Agama (Keletihan)", emotion: "Suara habis serak, penat merawat/ruqyah berpuluh pelajar dari malam sampai pagi. Lesu tak bermaya.", desc: "Penat merawat/ruqyah berpuluh pelajar dari malam sampai pagi. Lesu tak bermaya.", action: "Duduk bersandar letih, urut tekak, cakap perlahan dan serak." },
+                    { role: "GURU / WARDEN", title: "GPK HEM (Logistik)", emotion: "Pening kepala, telefon tak berhenti berbunyi dari waris, kelam-kabut urus makan minum pelajar di dewan.", desc: "Pening kepala, telefon tak berhenti berbunyi dari waris, kelam-kabut urus makan minum pelajar di dewan.", action: "Pegang kepala, pegang telefon, nampak berserabut." },
+                    { role: "GURU / WARDEN", title: "Pengetua (Jaga Imej)", emotion: "Risau cerita 'sekolah keras' viral di TikTok. Arahkan semua warden tutup mulut dari wartawan.", desc: "Risau cerita 'sekolah keras' viral di TikTok. Arahkan semua warden tutup mulut dari wartawan.", action: "Tegas, beri arahan supaya tak cerita pada orang luar." },
+                    { role: "GURU / WARDEN", title: "Guru Bimbingan & Kaunseling", emotion: "Overwhelmed (terbeban). 50 orang pelajar trauma, tak tahu nak mula sesi dari mana. Menangis senyap-senyap.", desc: "Overwhelmed (terbeban). 50 orang pelajar trauma, tak tahu nak mula sesi dari mana. Menangis senyap-senyap.", action: "Menangis senyap-senyap, nampak buntu, pegang banyak fail." },
+                    { role: "GURU / WARDEN", title: "Warden Garang (Sinis)", emotion: "Tak percaya histeria. Anggap pelajar 'buat perangai' sebab stres exam nak dekat.", desc: "Tak percaya histeria. Anggap pelajar 'buat perangai' sebab stres exam nak dekat.", action: "Mencebik, berpeluk tubuh, marah pelajar 'berlakon'." },
+                    { role: "GURU / WARDEN", title: "Penyelia Asrama (Staf Sokongan)", emotion: "Takut nak masuk blok, minta cuti kecemasan seminggu sebab mendakwa nampak kelibat semalam.", desc: "Takut nak masuk blok, minta cuti kecemasan seminggu sebab mendakwa nampak kelibat semalam.", action: "Pucat, elak masuk blok, merayu minta cuti pada pentadbir." },
+                    { role: "GURU / WARDEN", title: "Wakil PIBG (Penghubung Waris)", emotion: "Tersepit antara ibu bapa yang memaki hamun dalam group WhatsApp dan pihak sekolah yang cuba tenangkan keadaan.", desc: "Tersepit antara ibu bapa yang memaki hamun dalam group WhatsApp dan pihak sekolah yang cuba tenangkan keadaan.", action: "Bawa telefon, tunjuk chat bising ibu bapa, merayu minta statement rasmi." },
+                    { role: "GURU / WARDEN", title: "Guru Bertugas (Rasa Bersalah)", emotion: "Tak ada di asrama semalam sebab urusan kecemasan keluarga. Rasa bersalah tengok kawan-kawan warden kepenatan.", desc: "Tak ada di asrama semalam sebab urusan kecemasan keluarga. Rasa bersalah tengok kawan-kawan warden kepenatan.", action: "Asyik minta maaf, cuba tolong buat kerja-kerja kecil dengan muka serba salah." }
+                ]
+            },
+            "kebakaran_makmal_murid": {
+                teks: "Pagi tadi, sesi amali sains bertukar tragedi apabila satu letupan kecil berlaku di makmal kimia akibat tindak balas bahan uji kaji yang salah, lantas menyebabkan kebakaran. Api merebak pantas ke langsir dan meja. Penggera kecemasan berbunyi, dan semua warga sekolah diarahkan mengosongkan bangunan. Beberapa orang pelajar melecur ringan dan sesak nafas akibat asap tebal. Bomba berjaya mengawal api, tetapi bilik makmal hangus sama sekali. Sekarang, pelajar dan guru dikumpulkan di tapak perhimpunan. Ada yang terbatuk-batuk, menangis ketakutan, dan trauma.",
+                pool: [
+                    { role: "MURID", title: "Mangsa Tercedera", emotion: "Kesakitan, trauma teruk, menangis.", desc: "Tangan terkena lecuran ringan. Sangat terkejut dengan bunyi letupan.", action: "Asyik pegang tangan (olok-olok berbalut), mengerang kesakitan, menangis tak berhenti." },
+                    { role: "MURID", title: "Punca Kejadian (Pembuat Silap)", emotion: "Rasa bersalah melampau, ketakutan (takut digantung sekolah).", desc: "Andalah yang tersalah campur bahan kimia. Merasa diri sebagai pembunuh.", action: "Duduk menunduk, tutup muka, bercakap gagap, dan sentiasa menjauhkan diri dari pelajar lain." },
+                    { role: "MURID", title: "Saksi Panik (Asthma)", emotion: "Sesak nafas, panic attack.", desc: "Ada sejarah lelah (asthma). Terhidu asap, kini masih sukar bernafas akibat cemas.", action: "Pegang dada, pernafasan pendek dan laju, sukar nak cakap ayat panjang." },
+                    { role: "MURID", title: "Penyelamat Adrenalin", emotion: "Masih terkejut, adrenalin rush.", desc: "Berlagak wira tarik kawan keluar dari api tadi. Kini baru mula rasa gigil bila sedar bahaya yang dia tempuh.", action: "Tangan menggigil kuat, bercakap laju, mata membulat cerita detik kejadian." },
+                    { role: "MURID", title: "Si Kehilangan Barang", emotion: "Sedih melampau, marah-marah.", desc: "Beg sekolah berisi kerja kursus SPM/SPM yang sudah siap 100% hangus dalam makmal.", action: "Menangis meratapi barang yang musnah, tak peduli pasal kecederaan, asyik fikir pasal peperiksaan." },
+                    { role: "MURID", title: "Si Fobia Asap / Bau", emotion: "Paranoid, terganggu dengan bau.", desc: "Psikologi terjejas. Asyik bau hangit walaupun takda asap di tapak perhimpunan.", action: "Tutup hidung dengan baju, asyik tanya 'Korang bau asap tak? Bangunan ni nak runtuh ke?'." },
+                    { role: "MURID", title: "Si Penuh Kemarahan", emotion: "Marah, mencari salah.", desc: "Marahkan rakan (Punca Kejadian) dan Cikgu Sains kerana biarkan kemalangan ni berlaku.", action: "Nada tinggi, marah, tunjuk jari menuduh, cuba nak provok gaduh." },
+                    { role: "MURID", title: "Si Kaki Viral", emotion: "Tak sensitif, gila gajet.", desc: "Sibuk curi-curi ambil gambar makmal terbakar untuk post di TikTok/Insta.", action: "Asyik tengok 'phone' (olok-olok), tak peduli kawan nangis, leka baca komen netizen." },
+                    { role: "MURID", title: "Pengawas Kelas (Gagal)", emotion: "Rasa gagal tanggungjawab.", desc: "Sebagai ketua, anda rasa anda gagal arahkan kelas kosongkan makmal dengan cepat sehingga ada yang terhidu asap.", action: "Nampak kecewa, sentiasa pandang kawan yang cedera dengan rasa bersalah, banyak mendiamkan diri." },
+                    { role: "MURID", title: "Si Pasif (Shock)", emotion: "Tergamam (freeze).", desc: "Terkejut dengan letupan. Otak tak dapat proses apa yang jadi.", action: "Membatu, pandangan lompong, tak beri respon bila nama dipanggil, tubuh kaku." }
+                ]
+            },
+            "kebakaran_makmal_guru": {
+                teks: "Pagi tadi, sesi amali sains bertukar tragedi apabila satu letupan kecil berlaku di makmal kimia akibat tindak balas bahan uji kaji yang salah, lantas menyebabkan kebakaran. Api merebak pantas ke langsir dan meja. Penggera kecemasan berbunyi, dan semua warga sekolah diarahkan mengosongkan bangunan. Beberapa orang pelajar melecur ringan dan sesak nafas akibat asap tebal. Bomba berjaya mengawal api, tetapi bilik makmal hangus sama sekali. Sekarang, pelajar dan guru dikumpulkan di tapak perhimpunan. Ada yang terbatuk-batuk, menangis ketakutan, dan trauma.",
+                pool: [
+                    { role: "GURU / STAF", title: "Guru Sains (Dalam Makmal)", emotion: "Trauma teruk, rasa bersalah besar. Terbayang wajah pelajar yang melecur depan mata. Menangis menggigil.", desc: "Trauma teruk, rasa bersalah besar. Terbayang wajah pelajar yang melecur depan mata. Menangis menggigil.", action: "Menangis menggigil, asyik sebut nama pelajar yang cedera." },
+                    { role: "GURU / STAF", title: "Pembantu Makmal", emotion: "Tertekan, risau disalahkan dan hilang kerja kerana isu SOP penyimpanan bahan kimia. Asyik pertahankan diri.", desc: "Tertekan, risau disalahkan dan hilang kerja kerana isu SOP penyimpanan bahan kimia. Asyik pertahankan diri.", action: "Asyik pertahankan diri, cakap 'Bukan salah saya, SOP dah ikut!'." },
+                    { role: "GURU / STAF", title: "Guru Penyelamat (Cedera)", emotion: "Tangan cedera lecur, menahan sakit, cuba nampak kuat depan anak murid tapi perlukan rawatan hospital.", desc: "Tangan cedera lecur, menahan sakit, cuba nampak kuat depan anak murid tapi perlukan rawatan hospital.", action: "Pegang tangan, kerut dahi tahan sakit, cuba senyum tapi gagal." },
+                    { role: "GURU / STAF", title: "Pengetua (Krisis Media)", emotion: "Kelam-kabut uruskan polis dan bomba. Marah-marah cikgu sains sebab kecuaian, risau disoal siasat oleh Kementerian.", desc: "Kelam-kabut uruskan polis dan bomba. Marah-marah cikgu sains sebab kecuaian, risau disoal siasat oleh Kementerian.", action: "Marah-marah, mundar-mandir, asyik telefon pihak atasan." },
+                    { role: "GURU / STAF", title: "Guru Keselamatan (AJK Kebakaran)", emotion: "Frustrasi melampau! Kecewa sistem alat pemadam api sekolah lambat berfungsi/tamat tempoh, salahkan pentadbir.", desc: "Frustrasi melampau! Kecewa sistem alat pemadam api sekolah lambat berfungsi/tamat tempoh, salahkan pentadbir.", action: "Nada tinggi, marah pentadbir tak lulus bajet beli pemadam api baru." },
+                    { role: "GURU / STAF", title: "GPK Pentadbiran", emotion: "Pening fikirkan kos ganti rugi makmal sains yang bernilai puluhan ribu ringgit, risau jadual kelas SPM tergendala.", desc: "Pening fikirkan kos ganti rugi makmal sains yang bernilai puluhan ribu ringgit, risau jadual kelas SPM tergendala.", action: "Asyik kira bajet, pegang kepala, rungut pasal duit dan bilik darjah ganti." },
+                    { role: "GURU / STAF", title: "Guru Saksi (Kelas Sebelah)", emotion: "Cemas, menggeletar apabila teringat bunyi letupan bergegar, asyik pegang jantung akibat terkejut.", desc: "Cemas, menggeletar apabila teringat bunyi letupan bergegar, asyik pegang jantung akibat terkejut.", action: "Pegang jantung, terkejut kalau ada bunyi kuat, muka pucat." },
+                    { role: "GURU / STAF", title: "Guru Bimbingan Kaunseling", emotion: "Hilang arah (overwhelmed) tengok berpuluh pelajar trauma di padang. Rasa kemahiran PFA tak mencukupi untuk urus sendirian.", desc: "Hilang arah (overwhelmed) tengok berpuluh pelajar trauma di padang. Rasa kemahiran PFA tak mencukupi untuk urus sendirian.", action: "Buntu, mengeluh, merayu minta bantuan guru-guru lain." },
+                    { role: "GURU / STAF", title: "Kerani Pejabat", emotion: "Panik tak menentu. Lari tinggalkan fail sulit semasa loceng berbunyi, asyik merungut pening kepala terhidu asap.", desc: "Panik tak menentu. Lari tinggalkan fail sulit semasa loceng berbunyi, asyik merungut pening kepala terhidu asap.", action: "Batuk-batuk, picit dahi, bising risaukan fail pejabat hilang." },
+                    { role: "GURU / STAF", title: "Guru Hamil / Berisiko", emotion: "Sesak nafas, menangis ketakutan. Sangat risaukan kandungan bayi akibat letupan kuat dan terhidu asap toksik kimia.", desc: "Sesak nafas, menangis ketakutan. Sangat risaukan kandungan bayi akibat letupan kuat dan terhidu asap toksik kimia.", action: "Pegang perut, nafas tercungap sikit, menangis risaukan keadaan bayi." }
+                ]
+            },
+            "banjir_kampung": {
+                teks: "Hujan lebat yang turun tanpa henti sejak tiga hari lepas telah mengakibatkan banjir kilat luar biasa melanda kampung anda pada jam 2.00 pagi. Air naik terlalu cepat sehingga melepasi paras bumbung. Kebanyakan penduduk terpaksa meredah arus deras di dalam gelap dan hanya tinggal sehelai sepinggang. Kini, semua mangsa ditempatkan di Pusat Pemindahan Sementara (PPS) di dewan sekolah. Sesi PFA ini diadakan untuk meredakan emosi mangsa yang keletihan, keliru, dan trauma dengan kehilangan harta benda.",
+                pool: [
+                    { role: "PENDUDUK KAMPUNG", title: "Si Hilang Mata Pencarian (Ketua Keluarga)", emotion: "Sedih mendalam, putus asa, merenung nasib.", desc: "Kebun dan haiwan ternakan yang menjadi satu-satunya sumber pendapatan anda mati lemas. Anda memikirkan hutang bank yang bertimbun.", action: "Duduk menunduk meramas rambut, mengeluh panjang, bercakap perlahan dengan nada bergetar seperti menahan tangisan." },
+                    { role: "PENDUDUK KAMPUNG", title: "Ibu Anak Kecil (Kepenatan & Cemas)", emotion: "Cemas, mudah marah, sangat letih.", desc: "Anak anda yang berusia 2 tahun sedang demam panas. Susu formula dan lampin pakai buang habis hanyut. Bantuan belum tiba.", action: "Asyik mundar-mandir, mendodoi sesuatu (olok-olok dukung anak), cepat melenting bila disapa oleh petugas PFA." },
+                    { role: "PENDUDUK KAMPUNG", title: "Warga Emas Sebatang Kara", emotion: "Keliru, kebas emosi (numb), lemah fizikal.", desc: "Anda tinggal sendirian. Diselamatkan oleh bot APM, tetapi ubat-ubatan darah tinggi/kencing manis tertinggal di rumah.", action: "Nampak bingung, asyik tanya 'Bila makcik boleh balik rumah?', menggeletar kesejukan, memegang dada atau kepala." },
+                    { role: "PENDUDUK KAMPUNG", title: "Si Penyelamat Jiran (Adrenalin & Rasa Bersalah)", emotion: "Adrenalin tinggi, bercakap laju, survivor's guilt.", desc: "Anda bantu jiran-jiran naik bot, tapi akhirnya kereta dan rumah anda sendiri musnah. Anda cuba nampak okay tapi tangan bergetar.", action: "Bercakap laju menceritakan kejadian semalam berulang-ulang kali, tangan sentiasa bergerak, cuba senyum paksa." },
+                    { role: "PENDUDUK KAMPUNG", title: "Remaja Kehilangan Barangan Berharga", emotion: "Frustrasi, protes, mementingkan diri.", desc: "Telefon bimbit dan komputer riba kerja sekolah rosak ditenggelami air. Marah dengan keadaan PPS yang tidak selesa.", action: "Merungut pasal lantai keras/tiada internet, bersilang tangan, tak mahu beri kerjasama masa sesi PFA." },
+                    { role: "PENDUDUK KAMPUNG", title: "Pemilik Haiwan Kesayangan", emotion: "Menangis tanpa henti, rasa berdosa.", desc: "Terpaksa melepaskan 5 ekor kucing peliharaan kerana bot penyelamat tak benarkan haiwan dibawa bersama.", action: "Terisak-esak menangis, asyik tunjuk gambar kucing (olok-olok di telefon), salahkan diri sendiri sebagai 'pembunuh'." },
+                    { role: "PENDUDUK KAMPUNG", title: "Wanita Hamil Hampir Lemas", emotion: "Fobia air, panik, risaukan kandungan.", desc: "Semalam tergelincir masuk ke dalam air banjir dan hampir lemas. Kini trauma bila dengar bunyi hujan.", action: "Asyik usap perut, memeluk tubuh kesejukan, tiba-tiba panik dan pandang atas bila ada bunyi bising/angin." },
+                    { role: "PENDUDUK KAMPUNG", title: "Si Optimistik Palsu (Penafian/Denial)", emotion: "Ketawa tidak bertempat, menidakkan realiti.", desc: "Rumah musnah sepenuhnya, tapi menganggap ini hanya ujian biasa malah bergurau macam sedang bercuti di 'waterpark'.", action: "Ketawa kuat, tepuk bahu kawan-kawan, tapi bila ditanya soal rumah, muka terus berubah pucat sebelum gelak kembali." },
+                    { role: "PENDUDUK KAMPUNG", title: "Pelajar SPM Trauma Hilang Buku", emotion: "Kosong, hilang motivasi hidup.", desc: "Peperiksaan SPM tinggal 2 minggu, nota yang disalin bertahun-tahun musnah jadi bubur.", action: "Tenung dinding kosong, mata merah berair, tolak sebarang pujukan 'takpe boleh fotostat lain'." },
+                    { role: "PENDUDUK KAMPUNG", title: "Ketua Kampung (Terbeban)", emotion: "Burnout, rasa diserang, defensif.", desc: "Orang kampung semua mengadu pada anda tentang selimut tak cukup, makanan lambat. Anda dipersalahkan.", action: "Nampak serabut, elak eye contact, bila PFA Provider tanya khabar, anda terus marah 'Awak pergi tanya orang lain!'." }
+                ]
+            },
+            "kebakaran_rumah": {
+                teks: "Tragedi ngeri melanda kawasan perumahan apabila satu kebakaran besar tercetus akibat litar pintas pada jam 3.00 pagi. Api marak memusnahkan lima buah rumah teres. Walaupun bomba bertindak pantas, malangnya dua orang jiran tersumbat di dalam rumah dan maut rentung. Sesi PFA dijalankan di dewan rukun tetangga untuk menstabilkan trauma mangsa terselamat, saksi, dan keluarga mangsa.",
+                pool: [
+                    { role: "PENDUDUK", title: "Ahli Keluarga Terkorban", emotion: "Kejutan melampau (Shock), sedih, denial.", desc: "Anda berada di luar daerah semasa kejadian. Baru sampai dan nampak mayat jiran/keluarga dibawa naik trak polis.", action: "Meraung minta dilepaskan, tak percaya kenyataan. Selepas itu terus jadi membatu (freeze) tanpa respon." },
+                    { role: "PENDUDUK", title: "Saksi Mata Tingkap Atas", emotion: "Trauma visual, flashback.", desc: "Anda nampak mangsa mengetuk tingkap menjerit minta tolong di sebalik api yang marak. Suara itu terngiang-ngiang.", action: "Menutup telinga kuat-kuat, mata membulat ketakutan, asyik meracau 'Saya nampak muka dia, saya nampak dia!'" },
+                    { role: "PENDUDUK", title: "Punca Kebakaran (Tidak Sengaja)", emotion: "Rasa bersalah yang meremukkan jiwa, kemurungan.", desc: "Api bermula dari ubat nyamuk/plug extension di rumah anda. Anda rasa menjadi pembunuh.", action: "Duduk jauh di sudut, tepuk kepala sendiri berkali-kali, tak berani pandang muka orang lain. Minta nak mati." },
+                    { role: "PENDUDUK", title: "Jiran Sebelah Berjaya Lari (Survivor's Guilt)", emotion: "Rasa bersalah kerana terselamat.", desc: "Sempat lari bawa ahli keluarga, tapi tak sempat pecahkan pintu rumah jiran yang terkorban.", action: "Menangis sambil menumbuk lantai/meja, menyumpah diri sendiri sebagai penakut." },
+                    { role: "PENDUDUK", title: "Mangsa Melecur (Sakit Fizikal & Mental)", emotion: "Menahan sakit, marah, defensif.", desc: "Lengan dan bahu anda melecur teruk. Sedang tunggu rawatan lanjut tapi emosi terganggu dengan keadaan sekeliling.", action: "Asyik meniup lengan, mengerang sakit, marah pada sesiapa yang dekat 'Jangan sentuh saya!'" },
+                    { role: "PENDUDUK", title: "Ibu Hilang Tempat Berteduh", emotion: "Putus asa, risau masa depan.", desc: "Menyewa rumah tersebut, tiada wang simpanan langsung, anak 3 orang, semua hangus.", action: "Merintih nasib masa depan, peluk lutut, tanya PFA Provider berulang kali 'Kami nak tidur mana malam ni?'." },
+                    { role: "PENDUDUK", title: "Penyelamat Komuniti (Cedera)", emotion: "Frustrasi, adrenalin, penat.", desc: "Terjun dalam api nak selamatkan orang tapi gagal akibat asap tebal. Terbatuk-batuk teruk.", action: "Batuk tak henti, suara serak basah, marah anggota bomba lambat sampai." },
+                    { role: "PENDUDUK", title: "Si Fobia Asap / Bau Hangit", emotion: "Panik akut, paranoid.", desc: "Terhidu asap tebal semasa terperangkap. Sekarang tak tahan walau terbau sikit asap rokok atau habuk.", action: "Tutup hidung dengan baju, mengamuk bila terhidu sesuatu, nafas tersangkut-sangkut." },
+                    { role: "PENDUDUK", title: "Kanak-Kanak / Remaja Trauma Api", emotion: "Ketakutan spesifik (Phobia).", desc: "Kejadian berlaku masa sedang tidur. Sekarang takut nak tengok cahaya terang atau warna merah.", action: "Merengek, menyorok di belakang kerusi, tutup mata kuat-kuat bila nampak cahaya." },
+                    { role: "PENDUDUK", title: "Orang Awam Sensasi (Penyebar Fitnah)", emotion: "Menyibuk, tiada empati.", desc: "Tak terkesan sangat tapi sibuk rakam dan buat live, mendakwa nampak entiti pelik masa kebakaran.", action: "Pegang 'phone', sibuk bercerita benda tak masuk akal, tak sensitif dengan jiran yang menangis." }
+                ]
+            },
+            "udara_lima": {
+                teks: "Pameran LIMA di Langkawi sedang berlangsung meriah. Tiba-tiba, sebuah jet pejuang hilang kawalan semasa melakukan akrobatik dan terhempas ke atas sebuah rumah di kampung bersebelahan landasan. Bunyi letupan menggegarkan bumi, asap hitam menjulang ke udara. Seorang terbunuh dan beberapa penduduk kampung cedera terkena serpihan. Pasukan keselamatan mengepung kawasan. Anda, penduduk kampung yang trauma, dikumpulkan di balai raya untuk sesi intervensi awal.",
+                pool: [
+                    { role: "PENDUDUK", title: "Tuan Rumah (Keluar Beli Barang)", emotion: "Shock, rebah.", desc: "Anda baru keluar beli beras 10 minit. Balik rumah, rumah anda dah rata jadi kawah hitam.", action: "Kaku (Catatonic state). Tidak bergerak, tak berkelip pandang depan. Susah nak dihubungi (unreachable)." },
+                    { role: "PENDUDUK", title: "Jiran Sebelah (Pekak Sementara)", emotion: "Keliru, panik.", desc: "Bunyi letupan terlalu kuat pecahkan cermin tingkap anda. Telinga anda berdesing dan tak dengar bunyi jelas.", action: "Asyik tampar-tampar telinga, cakap menjerit (sebab tak dengar suara sendiri), selalu tanya 'Ha? Apa dia?'" },
+                    { role: "PENDUDUK", title: "Ibu Kehilangan Anak Sementara", emotion: "Histeria, meronta.", desc: "Anak anda main basikal kat luar masa kejadian. Masih belum dijumpai dalam kekalutan orang ramai lari menyelamatkan diri.", action: "Meronta-ronta nak lari dari balai raya, menangis menjerit panggil nama anak, tarik baju PFA Provider suruh cari." },
+                    { role: "PENDUDUK", title: "Penduduk Cedera Serpihan Terbang", emotion: "Sakit fizikal, merintih.", desc: "Kaki terkena serpihan atap/cermin yang terbang akibat gelombang letupan (shockwave).", action: "Pegang kaki, mengerut dahi, marah-marah pasukan medik tak rawat anda dulu." },
+                    { role: "PENDUDUK", title: "Saksi Mata Terdekat (Trauma Visual Ngeri)", emotion: "Menggigil teruk, terbayang-bayang.", desc: "Anda nampak detik cermin kokpit pecah dan wajah juruterbang sebelum ia berkecai merempuh bumi.", action: "Menangis tanpa suara, asyik pandang atas (langit), tekup muka dengan tapak tangan." },
+                    { role: "PENDUDUK", title: "Pemuda Penyelamat Gagal", emotion: "Marah, kecewa, letih.", desc: "Anda cuba lari ke bangkai pesawat nak tolong, tapi dihalang anggota tentera sebab amaran letupan kedua. Rasa tak guna.", action: "Tumbuk dinding, marah-marah polis/tentera bertindak kejam tak bagi dia selamatkan orang." },
+                    { role: "PENDUDUK", title: "Penduduk Protes/Marah (Anti-LIMA)", emotion: "Berang, mencari gaduh.", desc: "Dah bertahun anda buat aduan pameran udara bahaya untuk kampung, kerajaan tak dengar. Sekarang dah terbukti.", action: "Cakap lantang, menuding jari pada semua pihak berkuasa, provok orang kampung untuk marah sama." },
+                    { role: "PENDUDUK", title: "Warga Emas Masalah Jantung", emotion: "Sesak nafas, lemah semangat.", desc: "Hampir diserang sakit jantung sebab bunyi terlampau kuat. Nak makan ubat tapi tangan tak kuat.", action: "Pegang dada kiri, nafas tersengal-sengal, minta air sejuk." },
+                    { role: "PENDUDUK", title: "Si Paranoid Udara", emotion: "Fobia bunyi enjin, panik kronik.", desc: "Kini takut setiap kali dengar bunyi kereta laju, helikopter polis lalu, atau angin kuat. Rasa ada benda nak jatuh.", action: "Tersentak / melatah setiap kali ada bunyi. Terus meniarap dan tutup kepala bila terkejut." },
+                    { role: "PENDUDUK", title: "Perakam Video Tular (Rasa Bersalah)", emotion: "Tertekan, diserang netizen.", desc: "Rakam dari awal hempasan sampai nampak mayat, post di TikTok, kena kecam sebab merakam bukannya tolong.", action: "Menangis padam komen/video di telefon, rasa anxious, salahkan diri terlalu kejar views." }
+                ]
+            },
+            "petugas_banjir": {
+                teks: "Operasi menyelamat dan memindahkan mangsa banjir besar di Pantai Timur telah berlarutan selama dua minggu tanpa henti. Petugas barisan hadapan dari pelbagai agensi terpaksa meredah arus, kurang tidur, dan berdepan maki hamun mangsa. Kini air sudah surut. Pasukan intervensi PFA diaktifkan untuk menjalankan sesi 'defusing' (pelepasan emosi) buat petugas-petugas yang sudah mencapai tahap 'burnout', keletihan belas kasihan (compassion fatigue), dan trauma sekunder.",
+                pool: [
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Anggota APM (Keletihan Ekstrem)", emotion: "Burnout, Brain Fog (kabur minda), lesu.", desc: "Hanya tidur 2 jam sehari selama 14 hari. Angkat beratus mangsa. Badan hancur, fikiran celaru.", action: "Asyik tersengguk (mengantuk), respons sangat lambat, keliru bila disoal, tiada tenaga nak angkat tangan." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Pegawai JKM (Compassion Fatigue)", emotion: "Emosi terkoyak, sedih, kebas (numb).", desc: "Bertugas di PPS, dengar rintihan ratusan mangsa hilang rumah, dimaki mangsa sebab selimut tak cukup. Rasa tak berguna.", action: "Menangis tiba-tiba tanpa sebab, asyik ulang 'Saya tak mampu tolong dorang semua, saya gagal'." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Polis Marin / PDRM (Trauma Mayat)", emotion: "Gangguan stres pascatrauma (PTSD), flashback.", desc: "Menjumpai mayat kanak-kanak lemas tersangkut pada dahan pokok semasa rondaan bot. Terbayang wajah mayat.", action: "Mata merah tak berkelip, merenung ke bawah, tak nak makan sebab bayangkan rupa mayat, diam seribu bahasa." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Pegawai Pejabat Daerah (Tertekan/Marah)", emotion: "Marah, defensive, tertekan dari atasan.", desc: "Menjadi 'punching bag' dimaki ADUN/Menteri dan dimaki rakyat isu logistik bantuan.", action: "Nada tinggi, pertahankan diri 'Dorang ingat saya ada kuasa magik ke?', bercekak pinggang, bengang bila dipujuk." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Anggota Bomba (Survivor's Guilt)", emotion: "Rasa bersalah yang tebal.", desc: "Rakan setugas cedera parah dihentam kayu balak masa cuba selamatkan mangsa, tapi anda selamat di atas bot.", action: "Mengeluh panjang, tumbuk peha sendiri, asyik salahkan diri 'Kalau aku yang terjun air tu, dia takkan cedera.'" },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Sukarelawan NGO (Kecewa Sistem)", emotion: "Frustrasi, protes, kecewa.", desc: "Bawa lori bantuan sendiri, tapi ditahan masuk kawasan oleh pihak berkuasa kerana isu 'SOP'.", action: "Marah-marah agensi kerajaan, sinis dengan prosedur polis/APM, berdebat kalau ada watak PDRM berdekatan." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Pegawai Perubatan (Overwhelmed)", emotion: "Rasa dikepung (suffocated), nak menjerit.", desc: "Rawat mangsa gatal-gatal, taun, dan kecederaan non-stop di klinik bergerak yang kotor dan serba kekurangan.", action: "Urut pelipis kepala, cakap laju dan panik sikit, tak boleh duduk diam memikirkan pesakit." },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Komander Operasi / Ketua Balai (Topeng Kuat)", emotion: "Memendam perasaan (Bottled up), ego.", desc: "Kena nampak kebal dan 'macho' depan anak buah walau dada dah nak pecah dengan stres arahan orang atasan.", action: "Berlagak okey, senyum bongkak, menolak sesi PFA 'Saya okey, budak-budak tu yang lemah, saya tak perlu benda ni.'" },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Petugas Khas Wanita (Rindu Keluarga)", emotion: "Rasa bersalah pada keluarga (Guilt as a mother).", desc: "Tinggalkan anak kecil yang demam semata-mata dipanggil bertugas operasi banjir dua minggu.", action: "Tenung skrin telefon, mengalir air mata, asyik cakap 'Saya ibu yang teruk abaikan anak sendiri.'" },
+                    { role: "PETUGAS BARISAN HADAPAN", title: "Pemandu Bot Penyelamat (Fobia Air)", emotion: "Panik, ketakutan fizikal (Triggered).", desc: "Bot hampir terbalik rempuh tiang elektrik di air deras. Trauma nak pegang stering bot atau tengok sungai.", action: "Tangan sentiasa bergetar (tremor), elak pandang luar tingkap, bernafas pendek-pendek." }
+                ]
+            }
+        };
+
+        // ==========================================
+        // 3. LOGIK APLIKASI & NAVIGASI TAB
+        // ==========================================
+        let currentPin = '';
+        let myName = '';
+        let currentScenarioId = '';
+        let currentScenarioText = ''; 
+        let playersList = [];
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function switchFasiTab(tabName) {
+            const btnWatak = document.getElementById('tab-fasi-watak');
+            const btnSenario = document.getElementById('tab-fasi-senario');
+            const contentWatak = document.getElementById('fasi-content-watak');
+            const contentSenario = document.getElementById('fasi-content-senario');
+
+            if (tabName === 'watak') {
+                btnWatak.classList.add('active');
+                btnSenario.classList.remove('active');
+                contentWatak.classList.remove('hidden');
+                contentSenario.classList.add('hidden');
+            } else {
+                btnSenario.classList.add('active');
+                btnWatak.classList.remove('active');
+                contentSenario.classList.remove('hidden');
+                contentWatak.classList.add('hidden');
+            }
+        }
+
+        function switchPlayerTab(tabName) {
+            const btnWatak = document.getElementById('tab-player-watak');
+            const btnSenario = document.getElementById('tab-player-senario');
+            const contentWatak = document.getElementById('player-content-watak');
+            const contentSenario = document.getElementById('player-content-senario');
+
+            if (tabName === 'watak') {
+                btnWatak.classList.add('active');
+                btnSenario.classList.remove('active');
+                contentWatak.classList.remove('hidden');
+                contentSenario.classList.add('hidden');
+            } else {
+                btnSenario.classList.add('active');
+                btnWatak.classList.remove('active');
+                contentSenario.classList.remove('hidden');
+                contentWatak.classList.add('hidden');
+            }
+        }
+
+        function createRoom() {
+            currentScenarioId = document.getElementById('scenario-select').value;
+            const scenarioText = dbScenarios[currentScenarioId].teks;
+            
+            currentPin = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById('fasi-pin-display').innerText = currentPin;
+            
+            db.ref('rooms/' + currentPin).set({
+                state: 'lobby',
+                scenarioId: currentScenarioId,
+                scenarioText: scenarioText
+            });
+
+            db.ref('rooms/' + currentPin + '/players').on('value', snap => {
+                const players = snap.val();
+                const listEl = document.getElementById('fasi-player-list');
+                const pfa1 = document.getElementById('pfa-select-1');
+                const pfa2 = document.getElementById('pfa-select-2');
+                
+                listEl.innerHTML = '';
+                pfa1.innerHTML = '<option value="">-- Rawak / Random --</option>';
+                pfa2.innerHTML = '<option value="">-- Rawak / Random --</option>';
+                playersList = [];
+
+                if (players) {
+                    const count = Object.keys(players).length;
+                    document.getElementById('player-count').innerText = `Peserta (${count}):`;
+                    
+                    for (let name in players) {
+                        playersList.push(name);
+                        listEl.innerHTML += `<div class="player-badge">${name}</div>`;
+                        pfa1.innerHTML += `<option value="${name}">${name}</option>`;
+                        pfa2.innerHTML += `<option value="${name}">${name}</option>`;
+                    }
+                }
+            });
+
+            showScreen('screen-fasi-lobby');
+        }
+
+        function startScenario() {
+            if(playersList.length === 0) {
+                alert("Tunggu sekurang-kurangnya 1 peserta masuk!");
+                return;
+            }
+            db.ref('rooms/' + currentPin).update({ state: 'scenario' });
+            showScreen('screen-fasi-assign');
+        }
+
+        function assignRoles() {
+            let pfa1Name = document.getElementById('pfa-select-1').value;
+            let pfa2Name = document.getElementById('pfa-select-2').value;
+            
+            let pool = [...playersList];
+            let assignments = {};
+
+            if (!pfa1Name && pool.length > 0) {
+                pfa1Name = pool[Math.floor(Math.random() * pool.length)];
+            }
+            if (pfa1Name && pool.includes(pfa1Name)) {
+                assignments[pfa1Name] = dbPFA[0]; 
+                pool = pool.filter(n => n !== pfa1Name);
+            }
+
+            if (!pfa2Name && pool.length > 0) {
+                pfa2Name = pool[Math.floor(Math.random() * pool.length)];
+            }
+            if (pfa2Name && pfa2Name !== pfa1Name && pool.includes(pfa2Name)) {
+                assignments[pfa2Name] = dbPFA[1]; 
+                pool = pool.filter(n => n !== pfa2Name);
+            }
+
+            pool.sort(() => Math.random() - 0.5);
+
+            let rolesPool = [...dbScenarios[currentScenarioId].pool];
+            rolesPool.sort(() => Math.random() - 0.5);
+
+            pool.forEach((player, index) => {
+                let roleToAssign = rolesPool[index % rolesPool.length];
+                assignments[player] = roleToAssign;
+            });
+
+            db.ref('rooms/' + currentPin + '/assignments').set(assignments);
+            db.ref('rooms/' + currentPin).update({ state: 'assigned' });
+            
+            let summaryHTML = "";
+            for (let player in assignments) {
+                let roleInfo = assignments[player];
+                let isPFA = roleInfo.role.includes("PFA") ? "pfa-text" : "";
+                
+                summaryHTML += `
+                    <div class="summary-item">
+                        <div class="summary-name">${player} <span class="summary-role ${isPFA}">${roleInfo.role}</span></div>
+                        <div class="summary-title">${roleInfo.title}</div>
+                        <div class="summary-details">
+                            <strong>♥️ Emosi:</strong> ${roleInfo.emotion}<br>
+                            <strong>📖 Kisah:</strong> ${roleInfo.desc}<br>
+                            <strong>🎬 Arahan:</strong> ${roleInfo.action}
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('fasi-summary-list').innerHTML = summaryHTML;
+            document.getElementById('fasi-scenario-text-view').innerHTML = `<strong>SITUASI KITA:</strong><br><br>${dbScenarios[currentScenarioId].teks}`;
+
+            switchFasiTab('watak');
+            showScreen('screen-fasi-summary');
+            alert('Berjaya! Semua watak telah dipaparkan di telefon bimbit peserta.');
+        }
+
+        function endSimulation() {
+            if(confirm("Adakah anda pasti mahu menghentikan simulasi? Semua peserta akan dikeluarkan.")){
+                db.ref('rooms/' + currentPin).update({ state: 'ended' });
+                showScreen('screen-home');
+            }
+        }
+
+        function joinRoom() {
+            currentPin = document.getElementById('input-pin').value;
+            myName = document.getElementById('input-name').value;
+            
+            if (!currentPin || !myName) { alert("Sila masukkan PIN dan Nama!"); return; }
+
+            db.ref('rooms/' + currentPin).once('value').then(snap => {
+                if(snap.exists()) {
+                    db.ref('rooms/' + currentPin + '/players/' + myName).set(true);
+                    
+                    const roomData = snap.val();
+                    currentScenarioText = roomData.scenarioText; 
+                    
+                    document.getElementById('player-waiting-scenario-text').innerHTML = `<strong>SITUASI KITA:</strong><br><br>${currentScenarioText}`;
+                    showScreen('screen-player-waiting');
+                    listenToRoomState();
+                } else {
+                    alert("PIN Bilik tidak dijumpai!");
+                }
+            });
+        }
+
+        function listenToRoomState() {
+            db.ref('rooms/' + currentPin + '/state').on('value', snap => {
+                const state = snap.val();
+                if (state === 'scenario') {
+                    document.getElementById('player-waiting-scenario-text').style.color = "black";
+                    document.getElementById('waiting-text').innerText = "⏳ Sila baca senario dan tunggu watak anda diagihkan...";
+                } else if (state === 'assigned') {
+                    db.ref('rooms/' + currentPin + '/assignments/' + myName).once('value').then(roleSnap => {
+                        const myRole = roleSnap.val();
+                        if(myRole) displayMyRole(myRole);
+                    });
+                } else if (state === 'ended') {
+                    alert("Fasilitator telah menghentikan simulasi.");
+                    showScreen('screen-home');
+                }
+            });
+        }
+
+        function displayMyRole(data) {
+            const cardEl = document.getElementById('player-role-card');
+            
+            if (data.role.includes("PETUGAS PFA")) {
+                cardEl.className = "role-box pfa-style";
+            } else {
+                cardEl.className = "role-box";
+            }
+
+            document.getElementById('player-role-scenario-text').innerHTML = `<strong>SITUASI KITA:</strong><br><br>${currentScenarioText}`;
+
+            let reminderHTML = data.reminder ? `<div class="reminder-box">${data.reminder}</div>` : "";
+
+            cardEl.innerHTML = `
+                <span class="role-tag">${data.role}</span>
+                <h3 style="margin-top:15px; color:#b45309; font-size:1.3rem;">${data.title}</h3>
+                <p style="font-size:0.95rem;"><strong>♥️ Emosi Dalaman:</strong> <br><span style="color:#e11d48;">${data.emotion}</span></p>
+                <p style="font-size:0.95rem; line-height:1.6;"><strong>📖 Kisah Anda:</strong> <br>${data.desc}</p>
+                <p style="font-size:0.95rem; line-height:1.6;"><strong>🎬 Arahan Lakonan:</strong> <br>${data.action}</p>
+                ${reminderHTML}
+            `;
+            
+            switchPlayerTab('watak');
+            showScreen('screen-player-role');
+        }
+
+    </script>
+</body>
+</html>
