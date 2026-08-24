@@ -776,7 +776,7 @@
 
         // FUNGSI BARU: TUTUP BILIK SEPENUHNYA
         function closeRoom() {
-            if(confirm("Tutup bilik sepenuhnya? Semua peserta akan dikeluarkan.")){
+            if(confirm("Tutup bilik sepenuhnya? Semua peserta akan dikeluarkan. Sila pastikan semua peserta telah membuat penilaian.")){
                 db.ref('rooms/' + currentPin).update({ state: 'ended' });
                 showScreen('screen-home');
             }
