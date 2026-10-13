@@ -264,6 +264,7 @@
                 <option value="udara_lima">Senario 6: Kemalangan Udara LIMA (Kumpulan Penduduk)</option>
                 <option value="petugas_banjir">Senario 7: Petugas Pasca Banjir (Multi-Agensi)</option>
                 <option value="banjir_pengurus">Senario 8: Selepas Banjir, Ketua Pula Yang Runtuh (Kumpulan Ketua Jabatan JKN)</option>
+                <option value="buli_pejabat">Senario 9: Dia Tumbang di Pejabat, Kita Semua Diam (Kumpulan Pegawai Sejabatan)</option>
             </select>
         </div>
 
@@ -349,6 +350,14 @@
                 <p>Tanya semua peserta: <em>"Siapa yang menjaga ketua apabila ketua menjaga semua orang?"</em></p>
                 <p><em>"Apakah satu perkara yang akan anda lakukan untuk anak buah dan satu untuk diri sendiri selepas ini?"</em></p>
                 <p><em>"Bagaimana rasanya apabila ada rakan setaraf yang menawarkan bantuan kepada anda?"</em></p>
+            </div>
+            <div id="debrief-extra-buli" class="debrief-box hidden">
+                <h3>5. Refleksi Khas (Buli di Tempat Kerja)</h3>
+                <p>Ingatkan peserta bahawa sesi ini bukan siasatan dan tiada pihak yang dihukum di sini.</p>
+                <p><em>"Apakah tanda yang mungkin kita terlepas pandang atau memilih untuk tidak nampak?"</em></p>
+                <p><em>"Bagaimana kita mewujudkan jabatan yang selamat untuk bersuara?"</em></p>
+                <p><em>"Siapa di dalam bilik ini yang mungkin masih perlukan seseorang bertanya khabar secara peribadi?"</em></p>
+                <p style="color:#b45309;"><strong>Peringatan fasilitator:</strong> Jika ada peserta yang menunjukkan kesedihan berpanjangan atau berkongsi pengalaman peribadi, hubungi mereka secara peribadi selepas sesi dan rujuk kepada khidmat sokongan yang sesuai.</p>
             </div>
         </div>
 
@@ -667,6 +676,21 @@
                     { role: "KETUA JABATAN", title: "Pegawai Komunikasi/Media: Si Jurucakap yang Dimaki", emotion: "Terhina, tertekan, mahu berhenti.", desc: "Anda menjadi wajah JKN di media sosial dan dimaki netizen kerana kelewatan bantuan. Anda hanya menyampaikan maklumat, namun dipersalahkan.", action: "Menatal telefon dengan muka letih, berkata 'Saya cuma jurucakap', dan mengeluh tentang komen jahat yang masih terngiang." },
                     { role: "KETUA JABATAN", title: "Ketua Pasukan Psikososial/Kaunselor: Si Penolong yang Tiada Penolong", emotion: "Overwhelmed, keletihan belas kasihan, rasa keseorangan.", desc: "Anda menjaga emosi ratusan mangsa dan petugas, tetapi tidak sempat menjaga diri. Anda tidak tahu kepada siapa hendak mengadu, kerana semua orang menganggap anda sudah 'tahu caranya'.", action: "Cuba menolong orang lain dahulu, terlepas pandang emosi sendiri, dan pecah emosi jika ada yang bertanya 'Awak pula macam mana?'" }
                 ]
+            },
+            "buli_pejabat": {
+                teks: "Pagi semalam, seorang pegawai muda di jabatan kita tumbang di pejabat dan dikejarkan ke hospital. Dia kini dimasukkan ke wad. Tidak lama kemudian, satu perkara yang selama ini hanya dibisikkan mula dibualkan secara terbuka: dia telah dibuli secara berterusan oleh penyelia sendiri. Ada yang pernah nampak dia menangis di pantri, ada yang pernah dengar dia ditengking di dalam bilik mesyuarat, dan ada yang pernah mendengar aduan awalnya. Tetapi semua memilih untuk diam. Berita tersebar pantas dalam kumpulan WhatsApp jabatan. Hari ini pejabat terlalu sunyi. Kerusi pegawai itu masih kosong, komputernya masih menyala. Ada yang marah, ada yang rasa bersalah kerana tidak bertindak, dan beberapa orang sudah mula bercakap tentang memohon bertukar. Pihak pengurusan mengarahkan satu sesi defusing diadakan untuk semua pegawai sejabatan. Dua rakan anda dipilih sebagai Petugas PFA untuk membantu kumpulan ini. Peringatan: topik buli boleh menyentuh pengalaman peribadi. Sesiapa yang tidak selesa boleh keluar seketika tanpa perlu memberi sebab.",
+                pool: [
+                    { role: "KAKITANGAN JABATAN", title: "Penyelia yang Dituduh: Si \"Saya Cuma Tegas\"", emotion: "Defensif, takut kerjaya musnah, dan menolak untuk mengakui kesalahan, namun jauh di dalam ada rasa tidak tentu arah.", desc: "Anda penyelia kepada pegawai muda itu. Anda percaya anda hanya mahukan prestasi terbaik dan tidak sedar kata-kata anda melukakan. Kini semua mata memandang anda dan anda rasa dihukum sebelum sempat membela diri.", action: "Berpeluk tubuh, nada tinggi, berkata \"Saya cuma tegas, bukan buli!\" dan cuba menukar topik. Jika PFA Provider tidak menghakimi dan mendengar dengan tenang, anda mula terdiam dan bertanya perlahan, \"Betulkah saya sebegitu teruk?\" Jangan lakonkan watak jahat. Lakonkan manusia yang defensif dan takut." },
+                    { role: "KAKITANGAN JABATAN", title: "Rakan Meja Sebelah: Si Saksi yang Diam", emotion: "Rasa bersalah yang amat kuat, menyalahkan diri sendiri, dan sukar memaafkan diri.", desc: "Anda duduk bersebelahan pegawai itu setiap hari. Anda paling kerap nampak dia menahan air mata, malah pernah dia berkata \"Saya dah tak larat.\" Anda hanya menepuk bahunya dan berkata \"Sabarlah.\" Kini dia terlantar di wad.", action: "Menunduk, menggenggam jari, mengulang \"Kalau saya tanya dia betul-betul hari tu...\" dan menangis perlahan. Sukar menerima kata pujukan seperti \"Bukan salah awak\" kerana anda rasa ia tidak benar." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai yang Marah: Si Penuntut Keadilan", emotion: "Marah yang membara kepada penyelia dan pengurusan, kecewa dengan sistem.", desc: "Anda rasa semua orang di jabatan ini bersubahat dengan berdiam diri. Anda mahu tindakan tegas dan segera, bukan sesi bercakap-cakap. Sebahagian kemarahan anda sebenarnya kerana rasa tidak berdaya.", action: "Nada tinggi, menunjuk ke arah penyelia, bertanya \"Apa guna sesi ni? Bila nak ambil tindakan?\" Hanya reda apabila merasa didengar dan tidak dipujuk dengan klise." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai yang Memohon Bertukar: Si Takut Jadi Mangsa Seterusnya", emotion: "Cemas, tidak selamat, dan mahu melarikan diri.", desc: "Anda sudah mengisi borang permohonan pertukaran semalam. Anda takut jika terus berada di sini, nasib yang sama menimpa anda. Anda rasa bersalah meninggalkan rakan, tetapi lebih takut kehilangan kesihatan sendiri.", action: "Gelisah, kerap melihat jam atau pintu, bercakap perlahan, dan berkata \"Saya tak boleh duduk sini lagi.\" Rasa sedikit lega apabila ketakutan anda diterima tanpa dihukum." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai Senior: Si \"Sabar Sajalah\"", emotion: "Rasa bersalah yang disembunyikan di sebalik sikap mempertahankan diri.", desc: "Anda pernah mendengar aduan awal pegawai itu tetapi menasihatkannya supaya bersabar kerana \"semua orang pernah lalui\". Kini anda terhimpit antara menerima bahawa nasihat itu silap dan keperluan mempertahankan diri.", action: "Bercakap dengan nada berpengalaman, \"Zaman kita lagi teruk, kita tahan je.\" Tetapi tiba-tiba terdiam, menggosok muka, dan berkata perlahan, \"Mungkin saya patut dengar dia lebih lama.\"" },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai yang Menyebarkan Berita: Si Serba Salah", emotion: "Serba salah, takut disalahkan, dan cemas dengan kesan tindakan sendiri.", desc: "Anda yang pertama berkongsi berita di kumpulan WhatsApp jabatan kerana terlalu terkejut dan risau. Kini ada yang menuduh anda bergosip dan membocorkan maklumat, sedangkan niat anda hanya mahu semua orang tahu.", action: "Memegang telefon, kerap menyemak mesej, bertanya \"Salah ke saya bagitahu orang?\" Mencari pengesahan daripada orang sekeliling dan sukar duduk diam." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai yang Tidak Percaya: Si Penafi", emotion: "Denial, ketidakselesaan, dan menolak realiti yang menyakitkan.", desc: "Anda sukar menerima bahawa buli sebegini berlaku di jabatan anda. Lebih mudah bagi anda mempercayai ada sebab lain, mungkin kesihatan atau masalah peribadi, daripada menerima bahawa semua orang gagal melindunginya.", action: "Berkata \"Mungkin dia memang lemah\" atau \"Entah-entah ada sebab lain dia sakit.\" Ketawa kecil yang tidak sesuai, dan tidak selesa jika perbincangan menjadi terlalu emosi." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai Baharu: Si Takut dan Keliru", emotion: "Takut, keliru, dan tidak tahu kepada siapa hendak mengadu.", desc: "Anda baru tiga bulan bertugas. Anda melihat apa yang berlaku dan bimbang nasib yang sama akan menimpa anda. Anda tidak tahu siapa boleh dipercayai dan takut bersuara kerana belum dikenali.", action: "Duduk di hujung bilik, bercakap perlahan, jarang bertentang mata, dan bertanya \"Kalau saya ada masalah, saya patut cakap dengan siapa?\" Terbuka sedikit apabila dilayan dengan lembut." },
+                    { role: "KAKITANGAN JABATAN", title: "Pegawai yang Senyap di Penjuru: Si Mangsa Tersembunyi", emotion: "Kebas emosi, ketakutan yang dipendam, dan rasa terdedah.", desc: "Anda juga pernah dibuli oleh penyelia yang sama tetapi tidak pernah memberitahu sesiapa. Melihat apa yang berlaku kepada rakan anda, anda berasa seperti melihat diri sendiri. Anda tidak mahu orang tahu.", action: "Tidak bercakap langsung kecuali ditanya, menunduk, dan mengelak pandang penyelia. Hanya akan membuka sedikit jika PFA Provider perasan dan mendekati secara senyap dan peribadi, bukan di hadapan semua orang. Ini ujian sama ada PFA Provider peka kepada yang diam." },
+                    { role: "KAKITANGAN JABATAN", title: "Ketua Seksyen: Si Terperangkap di Tengah", emotion: "Tertekan, terhimpit, dan takut membuat keputusan yang salah.", desc: "Anda perlu melindungi pasukan sambil mengikut prosedur rasmi seperti siasatan dan laporan kepada pengurusan. Anda tidak mahu berat sebelah, tetapi semua orang melihat anda sebagai wakil pihak yang sepatutnya bertindak lebih awal.", action: "Bercakap dengan hati-hati, menggunakan istilah rasmi seperti \"prosedur\" dan \"siasatan\", kerap membetulkan kata-kata supaya neutral. Akhirnya mengaku, \"Saya pun tak tahu apa yang betul sekarang.\"" }
+                ]
             }
         };
 
@@ -845,6 +869,16 @@
                         extraDebrief.classList.remove('hidden');
                     } else {
                         extraDebrief.classList.add('hidden');
+                    }
+                }
+
+                // Panduan refleksi tambahan untuk Senario 9 (Buli di Tempat Kerja)
+                const extraBuli = document.getElementById('debrief-extra-buli');
+                if (extraBuli) {
+                    if (currentScenarioId === 'buli_pejabat') {
+                        extraBuli.classList.remove('hidden');
+                    } else {
+                        extraBuli.classList.add('hidden');
                     }
                 }
 
